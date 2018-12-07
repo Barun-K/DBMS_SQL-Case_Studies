@@ -1,0 +1,77 @@
+1.Display customer id, first name, initials and last name of female customers who have some initials.
+
+select cust_id,cust_fname,initials,cust_lname from bank_customer where cust_sex = 'F' and initials is not null;
+
+************************************************************************************************************************
+2.Write a query to show customer id, phone no., and full address of customers who live either in 'Karnataka' or 'Tamilnadu'.
+
+select cust_id, cust_phone, cust_addr_line1||cust_addr_line2||cust_city||cust_state||cust_pin as "Full Address" from bank_cust_contact where cust_state in ('Karnataka','Tamilnadu');
+                           OR
+
+select cust_id,bcc.cust_phone,bcc.cust_addr_line1,bcc.cust_addr_line2 from bank_customer bc join bank_cust_contact bcc using(cust_id) where cust_state in ('Karnataka','Tamilnadu');
+
+*****************************************************************************************************************************
+3.Display details (account no, primary customer id, current balance and a/c start date) of active SB accounts in the order of latest start date (first) to earliest start date (last).
+
+select account_no,primary_cust_id,curr_bal_amt,start_date from bank_sb_account where acc_status = 'Active' order by start_date desc;
+                                            OR
+select account_no,primary_cust_id,curr_bal_amt,start_date from bank_sb_account where acc_status = 'Active'  order by start_date desc;
+
+*****************************************************************************************************************************
+4.Display bank employee designation, id, name and gender of those employees who have a manager, sorted in descending order of designation and ascending order of employee name.
+
+select bank_emp_id, emp_name, emp_sex from bank_employee where manager_id is not null order by designation desc,emp_name;
+
+*****************************************************************************************************************************
+5.What are the minimum and maxium installment amounts of RD accounts which were started during year 2008?
+
+select min(installment_amt), max(installment_amt) from bank_rd_account where to_char(rd_start_dt,'fmYYYY') = '2008';
+                                        OR
+select min(installment_amt),max(installment_amt) from bank_rd_account where rd_start_dt like '_______08%';
+
+*****************************************************************************************************************************
+6.Write a query to show designation and the no. of employees under each designation except 'attender'. Arrange the output by no. of employees and then by designation.
+
+select designation,count(distinct bank_emp_id) from bank_employee where designation <> 'Attender' group by designation order by count(distinct bank_emp_id),designation;
+
+                                          OR
+
+select designation,count(*) as no_of_employees from bank_employee where designation <> 'attender' group by designation order by no_of_employees,designation;
+
+*****************************************************************************************************************************
+7.Write a query to show customer id and the no. of office phones they have of those customers who have more than one office phone.
+
+select cust_id,count(cust_phone) from bank_cust_contact where contact_type = 'OFFICE' group by cust_id having count(cust_phone)>1;
+                                  OR
+select cust_id,count(*) from bank_cust_contact where contact_type = 'OFFICE' group by cust_id having count(*)>1;
+
+*****************************************************************************************************************************
+8.Display customer id, first & last names, home phone no. and city of those customers who live outside Karnataka.
+
+select b.cust_id,b.cust_fname,b.cust_lname,c.cust_phone,c.cust_city,contact_type from bank_customer b join bank_cust_contact c on b.cust_id = c.cust_id where contact_type = 'HOME' and cust_state <> 'Karnataka';
+
+                             OR (USING CLAUSE)
+
+select cust_id,cust_fname,cust_lname,cust_phone,cust_city,cust_state,contact_type from bank_customer b1 join bank_cust_contact b2 using(cust_id) where contact_type = 'HOME' and cust_state <> 'Karnataka';
+
+
+*****************************************************************************************************************************
+9.Show transaction details – SB a/c no., transaction type, date, description and amount, for transaction amounts > 1000. Sort the output based on a/c no, transaction type and date.
+
+select account_no as "SB a/c no.",trans_type as "Transaction type",trans_dt,trans_desc,trans_amt from bank_transaction bt join bank_sb_account bsa on bt.trans_acc_no = bsa.account_no where trans_amt > 1000 order by account_no,trans_type,trans_dt;
+
+*****************************************************************************************************************************
+10.Show customer id, his/her phone no.(s), SB account no., transaction date and amount of the customer(s) who have done ATM withdrawal transaction.
+
+select bc.cust_id,cust_phone,account_no,trans_dt,trans_amt from bank_customer bc join bank_cust_contact bcc on bc.cust_id = bcc.cust_id join bank_sb_account bsa on bsa.primary_cust_id=bc.cust_id join bank_transaction bt on bt.trans_acc_no = bsa.account_no where bt.trans_desc like '%ATM%';
+
+*****************************************************************************************************************************
+select cust_state,cust_city,sum(trans_amt) from bank_cust_contact bcc join bank_sb_account bsa on bcc.cust_id = bsa.primary_cust_id
+join bank_transaction bt on bsa.account_no = bt.trans_acc_no group by cube(cust_state,cust_city) order by cust_state,cust_city;
+
+***************************************************************************************************************************
+
+select cust_state,count(*) from bank_cust_contact bcc join bank_sb_account bsa on bcc.cust_id = bsa.primary_cust_id join bank_transaction bt on bsa.account_no = bt.trans_acc_no where bt.trans_type = 'CR' and bt.trans_amt >10000 group by(cust_state) order by cust_state;
+
+
+
